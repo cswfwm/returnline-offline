@@ -1,0 +1,54 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'com.returnline.offline'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.returnline.offline"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        release {
+            // 密钥在 CI 里生成，不入库；本地构建时若没有则退回调试签名
+            def ks = rootProject.file("keystore.p12")
+            if (ks.exists()) {
+                storeFile ks
+                storePassword "returnline123"
+                storeType "PKCS12"
+                keyAlias "returnline"
+                keyPassword "returnline123"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig rootProject.file("keystore.p12").exists() ? signingConfigs.release : signingConfigs.debug
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    dependencies {
+        implementation 'androidx.webkit:webkit:1.8.0'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs = ['src/main/assets']
+        }
+    }
+}
